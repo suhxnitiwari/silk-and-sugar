@@ -28,20 +28,20 @@ const KINDS = {
 };
 
 const PRESETS = [
-  { id: 'sampler', name: 'The Sampler', note: 'Six of each cookie', tag: 'Every flavor',
+  { id: 'sampler', name: 'The Sampler', note: 'Two dozen cookies, an even mix of all four flavors', tag: 'Every flavor',
     set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6 } },
   { id: 'meeting', name: 'The Morning Meeting', note: 'A dozen muffins and a dozen cookies',
     set: { 'hazelnut-muffin': 6, 'double-muffin': 6, 'butterscotch-cookie': 6, 'strawberry-cookie': 6 } },
-  { id: 'celebration', name: 'The Celebration', note: 'Four dozen cookies, twelve of each',
+  { id: 'celebration', name: 'The Celebration', note: 'Four dozen cookies, an even mix of all four flavors',
     set: { 'hazelnut-cookie': 12, 'butterscotch-cookie': 12, 'double-cookie': 12, 'strawberry-cookie': 12 } },
   { id: 'brunch', name: 'The Brunch', note: 'Two dozen muffins and a loaf',
     set: { 'hazelnut-muffin': 6, 'butterscotch-muffin': 6, 'double-muffin': 6, 'strawberry-muffin': 6, loaf: 1 } },
   // Holiday boxes live on holidays.html and arrive here as ?box=<id>.
-  { id: 'thanksgiving-table', name: 'The Thanksgiving Table', note: 'Six of each cookie and a loaf', holiday: true,
+  { id: 'thanksgiving-table', name: 'The Thanksgiving Table', note: 'Two dozen cookies in all four flavors, plus a loaf', holiday: true,
     set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6, loaf: 1 } },
-  { id: 'thanksgiving-morning', name: 'Thanksgiving Morning', note: 'Six of each muffin and a loaf', holiday: true,
+  { id: 'thanksgiving-morning', name: 'Thanksgiving Morning', note: 'Two dozen muffins in all four flavors, plus a loaf', holiday: true,
     set: { 'hazelnut-muffin': 6, 'butterscotch-muffin': 6, 'double-muffin': 6, 'strawberry-muffin': 6, loaf: 1 } },
-  { id: 'holiday-party', name: 'The Holiday Party', note: 'Twelve of each cookie', holiday: true,
+  { id: 'holiday-party', name: 'The Holiday Party', note: 'Four dozen cookies in all four flavors', holiday: true,
     set: { 'hazelnut-cookie': 12, 'butterscotch-cookie': 12, 'double-cookie': 12, 'strawberry-cookie': 12 } },
   { id: 'open-house', name: 'The Open House', note: 'Two dozen cookies, two dozen muffins and two loaves', holiday: true,
     set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6,
@@ -180,7 +180,14 @@ function renderStage(t) {
   else if (t.items > 0) note = `${MINIMUM - t.items} more to reach two dozen`;
   else if (t.loaves) note = 'A loaf on its own is always welcome';
   $('#meter-note').textContent = note;
-  $('#stage').classList.toggle('is-ready', t.items >= MINIMUM || (t.items === 0 && t.loaves > 0));
+  const stage = $('#stage');
+  const ready = t.items >= MINIMUM || (t.items === 0 && t.loaves > 0);
+  // The ribbon ties itself the moment the box first reaches two dozen.
+  if (ready && !stage.classList.contains('is-ready')) {
+    stage.classList.add('tie');
+    setTimeout(() => stage.classList.remove('tie'), 900);
+  }
+  stage.classList.toggle('is-ready', ready);
 
   document.querySelectorAll('.preset').forEach(b => b.classList.toggle('is-active', b.dataset.preset === activePreset));
 }
