@@ -76,8 +76,8 @@ function totals() {
 
 function problem(t) {
   if (t.items === 0 && t.loaves === 0) return 'Add cookies, muffins or a loaf to begin.';
-  if (t.items > 0 && t.items < MINIMUM) return `Add ${MINIMUM - t.items} more cookies or muffins to reach the two dozen minimum.`;
-  if (t.delivery && t.subtotal < DELIVERY_MINIMUM) return `Delivery starts at $${DELIVERY_MINIMUM}. Add ${money(DELIVERY_MINIMUM - t.subtotal)} more, or choose pickup.`;
+  if (t.items > 0 && t.items < MINIMUM) return `Just ${MINIMUM - t.items} more cookies or muffins to reach two dozen.`;
+  if (t.delivery && t.subtotal < DELIVERY_MINIMUM) return `Hand delivery begins at $${DELIVERY_MINIMUM}, just ${money(DELIVERY_MINIMUM - t.subtotal)} away. Pickup is always free.`;
   return '';
 }
 
@@ -172,12 +172,12 @@ form.addEventListener('submit', async e => {
   const missing = required.filter(n => !form[n].value.trim() || !form[n].checkValidity());
   missing.forEach(n => form[n].classList.add('invalid'));
   if (missing.length) {
-    error.textContent = 'Fill in the highlighted fields.';
+    error.textContent = 'Please fill in the highlighted fields.';
     form[missing[0]].focus();
     return;
   }
   if (!form.labels.checked) {
-    error.textContent = 'Read the ingredients and allergens, then check the box.';
+    error.textContent = "Please confirm you've read the ingredients and allergens.";
     return;
   }
 
@@ -203,7 +203,7 @@ form.addEventListener('submit', async e => {
       });
       if (!res.ok) throw new Error();
     } catch {
-      error.textContent = "Your request didn't send. Try again in a moment.";
+      error.textContent = "Your request didn't go through. Please try again in a moment.";
       return;
     }
   } else {
