@@ -2,7 +2,7 @@
 // FORM_ENDPOINT to receive them by email; until then the form opens a
 // pre-written email to ORDER_EMAIL.
 const FORM_ENDPOINT = '';
-const ORDER_EMAIL = 'hello@silkandsugarbakery.com';
+const ORDER_EMAIL = 'suhanitiwari@utexas.edu';
 
 const MINIMUM = 24;
 const DELIVERY_FEE = 30;
