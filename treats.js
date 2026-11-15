@@ -4,10 +4,10 @@
 
 const TREAT_ART = {
   hazelnut: {
-    dough: ['#9A6A4C', '#6E4733', '#43281B'],
+    dough: ['#62392A', '#41251A', '#25130C'],
     bits: [
-      { color: '#22110A', count: 7, size: 7, sides: 5 },
-      { color: '#CFA273', count: 5, size: 4.5, sides: 7 },
+      { color: '#120804', count: 7, size: 7, sides: 5 },
+      { color: '#D9B282', count: 6, size: 4.5, sides: 7 },
     ],
   },
   butterscotch: {
@@ -19,10 +19,10 @@ const TREAT_ART = {
     specks: { color: '#FFFDF7', count: 12, size: 1.5 },
   },
   double: {
-    dough: ['#62392A', '#41251A', '#25130C'],
+    dough: ['#DDAE72', '#B9864E', '#7C512B'],
     bits: [
-      { color: '#120804', count: 8, size: 7, sides: 5 },
-      { color: '#BE8F60', count: 5, size: 5, sides: 7 },
+      { color: '#2A160D', count: 8, size: 7, sides: 5 },
+      { color: '#A8683F', count: 5, size: 5, sides: 7 },
     ],
   },
   strawberry: {

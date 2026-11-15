@@ -703,10 +703,17 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
 .collage-box svg { width: 100%; height: auto; aspect-ratio: 1; display: block; }
 .collage-box figcaption { margin-top: 12px; text-align: center; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--champagne); }
 
+/* Cookie photos on the flavor cards */
+.flavor-photo { position: relative; margin: -16px -10px 22px; aspect-ratio: 1; overflow: hidden; background: #EFE3D3; border: 0.5px solid rgba(168, 135, 90, .6); }
+.flavor-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .9s cubic-bezier(.19, 1, .22, 1); }
+.flavor:hover .flavor-photo img { transform: scale(1.05) rotate(-2deg); }
+.numeral-tag { position: absolute; top: 10px; left: 10px; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(250, 244, 236, .92); border: 0.5px solid var(--gold); font-family: var(--serif); font-size: 14px; color: var(--ink); }
+
 /* Status labels, Westman style: tiny letterspaced caps, no pill */
 .tag { display: block; margin: 0 0 6px; font-family: var(--sans); font-size: 10px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: #9A4F58; }
 .chapter-dark .tag, .preset.is-active .tag { color: var(--rose); }
 .flavor .tag { margin-bottom: 8px; }
+.photo-tag { position: absolute; left: 10px; bottom: 10px; margin: 0; padding: 6px 10px; background: rgba(250, 244, 236, .92); border: 0.5px solid var(--gold); }
 
 /* Tablet */
 @media (max-width: 980px) {

@@ -15,9 +15,9 @@ const ZONES = [
 ];
 
 const FLAVORS = [
-  { id: 'hazelnut', name: 'Chocolate hazelnut coffee', tone: '#5E3B2C' },
+  { id: 'hazelnut', name: 'Chocolate hazelnut coffee', tone: '#41251A' },
   { id: 'butterscotch', name: 'Butterscotch toffee', tone: '#B07A45' },
-  { id: 'double', name: 'Double chocolate walnut', tone: '#2F1A12' },
+  { id: 'double', name: 'Double chocolate walnut', tone: '#B9864E' },
   { id: 'strawberry', name: 'Strawberry shortcake crunch', tone: '#D29BA2' },
 ];
 
