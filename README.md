@@ -19,4 +19,4 @@ The order form reads two settings at the top of `script.js`:
 - `FORM_ENDPOINT`: a form service URL (such as Formspree) that emails each request.
 - `ORDER_EMAIL`: used for a pre-written email when no endpoint is set.
 
-Deposits are collected afterward with a Stripe invoice.
+Each order is paid in full with a Stripe invoice once the date is confirmed.

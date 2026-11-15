@@ -158,7 +158,7 @@
       <ol class="steps">
         <li><span class="numeral">I</span><h3>Build your order</h3><p>Pick your flavors below. Two dozen minimum, any mix of cookies and muffins.</p></li>
         <li><span class="numeral">II</span><h3>We confirm your date</h3><p>Send your event details and you'll hear back to confirm the bake date.</p></li>
-        <li><span class="numeral">III</span><h3>Hold it with a deposit</h3><p>A secure Stripe invoice for 50% of your order reserves your date.</p></li>
+        <li><span class="numeral">III</span><h3>Pay to reserve it</h3><p>Pay your full order through a secure Stripe invoice to lock in your date.</p></li>
         <li><span class="numeral">IV</span><h3>Pickup or hand delivery</h3><p>Pickup in Austin is free. Hand delivery is $30 on orders of $100 or more.</p></li>
       </ol>
     </section>
@@ -167,7 +167,7 @@
       <header class="section-head">
         <p class="eyebrow">Build your order</p>
         <h2>Choose your flavors</h2>
-        <p>Cookies and muffins come in half dozens. The loaf can be ordered on its own.</p>
+        <p>Two dozen minimum across cookies and muffins, mixed any way you like. The loaf can be ordered on its own.</p>
       </header>
 
       <div class="builder">
@@ -176,7 +176,8 @@
         <aside class="summary" aria-live="polite">
           <h3>Your order</h3>
           <dl class="totals">
-            <div><dt>Cookies and muffins</dt><dd id="sum-items">0</dd></div>
+            <div><dt>Cookies</dt><dd id="sum-cookies">0</dd></div>
+            <div><dt>Muffins</dt><dd id="sum-muffins">0</dd></div>
             <div><dt>Loaves</dt><dd id="sum-loaves">0</dd></div>
             <div><dt>Subtotal</dt><dd id="sum-subtotal">$0</dd></div>
           </dl>
@@ -190,7 +191,6 @@
           <dl class="totals totals-final">
             <div><dt>Delivery</dt><dd id="sum-delivery">$0</dd></div>
             <div class="grand"><dt>Total</dt><dd id="sum-total">$0</dd></div>
-            <div><dt>Deposit to hold your date</dt><dd id="sum-deposit">$0</dd></div>
           </dl>
 
           <p class="status" id="sum-status"></p>
@@ -220,7 +220,7 @@
         <header class="section-head">
           <p class="eyebrow">Event details</p>
           <h2>Tell us about your event</h2>
-          <p>You'll hear back to confirm your date, then receive a Stripe invoice for the deposit.</p>
+          <p>You'll hear back to confirm your date, then receive a Stripe invoice to pay for your order.</p>
         </header>
 
         <form id="order-form" novalidate>
@@ -247,7 +247,7 @@
 
         <div class="thanks" id="thanks" hidden>
           <h3>Thank you</h3>
-          <p>Your request is in. You'll hear back to confirm your date and receive your deposit invoice.</p>
+          <p>Your request is in. You'll hear back to confirm your date and receive your Stripe invoice.</p>
         </div>
       </div>
     </section>

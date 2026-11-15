@@ -246,20 +246,21 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
 /* Order builder */
 .order { padding-top: 40px; }
 .builder { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
+.group + .group { margin-top: 44px; }
+.group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--gold); }
+.group-head h3 { font-size: 32px; }
+.group-head p { margin: 0; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); }
 .row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 20px;
+  display: flex;
   align-items: center;
-  padding: 18px 0;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
   border-bottom: 0.5px solid rgba(168, 135, 90, .5);
 }
-.row:first-child { border-top: 0.5px solid rgba(168, 135, 90, .5); }
 .row-name { display: flex; align-items: center; gap: 14px; }
 .row-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 2px var(--ivory), 0 0 0 2.5px var(--gold); flex: none; }
-.row-name h3 { font-size: 21px; }
-.qty { text-align: center; }
-.qty-label { display: block; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+.row-name h4 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 21px; line-height: 1.2; }
 .stepper { display: inline-flex; align-items: center; border: 0.5px solid var(--gold); background: #FFFBF6; }
 .stepper button {
   width: 36px;
@@ -397,9 +398,9 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
   .price-line span + span { border-left: 0; }
   .flavors { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr; }
-  .row { grid-template-columns: 1fr 1fr; gap: 12px 16px; }
-  .row-name { grid-column: 1 / -1; }
-  .row-spacer { display: none; }
+  .row-name { gap: 10px; }
+  .row-name h4 { font-size: 18px; }
+  .group-head h3 { font-size: 28px; }
   .label-grid { grid-template-columns: 1fr; }
   .label-grid div:nth-child(2n) { border-left: 0; }
   .label-grid div { padding: 18px 4px; }
