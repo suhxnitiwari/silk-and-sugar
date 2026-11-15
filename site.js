@@ -4,7 +4,7 @@
 // Each season's last day to order. Change a date here and every page follows.
 const SEASONS = [
   { id: 'thanksgiving', name: 'Thanksgiving', closes: '2026-11-22T23:59:00', closesText: 'Sunday, November 22' },
-  { id: 'christmas', name: 'Christmas', closes: '2026-12-18T23:59:00', closesText: 'Friday, December 18' },
+  { id: 'christmas', name: 'Christmas', closes: '2026-12-16T23:59:00', closesText: 'Wednesday, December 16' },
 ];
 
 const msLeft = season => new Date(season.closes) - Date.now();
