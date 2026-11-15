@@ -48,6 +48,7 @@
       <a href="index.html#menu">Muffins</a>
       <a href="index.html#loaf">The loaf</a>
       <a href="index.html#offices">Events</a>
+      <a href="holidays.html">Holidays</a>
       <a href="about.html" aria-current="page">The baker</a>
       <a href="index.html#order" class="nav-order">Order</a>
     </nav>
@@ -89,9 +90,20 @@
     </section>
 
     <section class="section about-kitchen">
-      <figure class="arch">
-        <img src="images/banana-bread.jpg" alt="Banana bread topped with two banana halves, walnuts and chocolate">
-      </figure>
+      <div class="collage">
+        <figure class="arch">
+          <img src="images/banana-bread.jpg" alt="Banana bread topped with two banana halves, walnuts and chocolate">
+        </figure>
+        <figure class="collage-box" aria-hidden="true">
+          <div class="tray">
+            <svg><use href="#t-cookie-hazelnut"/></svg>
+            <svg><use href="#t-cookie-butterscotch"/></svg>
+            <svg><use href="#t-cookie-double"/></svg>
+            <svg><use href="#t-cookie-strawberry"/></svg>
+          </div>
+          <figcaption>Four flavors, one box</figcaption>
+        </figure>
+      </div>
       <div class="about-kitchen-text">
         <p class="eyebrow">Off the clock</p>
         <h2>When I'm not baking</h2>
@@ -138,11 +150,12 @@
         <a href="index.html#order">Request an order</a>
         <a href="index.html#menu">The menu</a>
         <a href="index.html#loaf">The loaf</a>
+        <a href="holidays.html">Holidays</a>
       </div>
       <div>
         <h4>Pickup and delivery</h4>
         <p>Pickup in Austin by appointment</p>
-        <p>Hand delivery with orders of $100 and up</p>
+        <p>Hand delivery from $25 with orders of $100 and up</p>
         <p>Baked and delivered fresh in Austin</p>
       </div>
       <div>
@@ -154,6 +167,8 @@
     <p class="copyright">&copy; 2026 Silk &amp; Sugar</p>
   </footer>
 
+  <script src="treats.js"></script>
+  <script src="site.js"></script>
   <script src="motion.js"></script>
 </body>
 </html>

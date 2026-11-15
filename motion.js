@@ -5,15 +5,24 @@
   document.documentElement.classList.add('motion-ready');
   if (calm || !('IntersectionObserver' in window)) return;
 
+  // The logo, menu links and order button ease in one after another on load.
+  document.querySelectorAll('.announce, .brand, .nav a').forEach((el, i) => {
+    el.style.setProperty('--i', i);
+    el.classList.add('load-in');
+  });
+
+  // Headings, text and buttons inside a block cascade in one by one.
   const groups = [
-    '.section-head', '.price-line', '.flavor', '.promise', '.occasion', '.steps li',
-    '.loaf-inner', '.label-grid > div', '.statement', '.about-intro-head', '.about-intro-body',
-    '.arch', '.about-kitchen-text', '.about-cta', '.details .section-head', '.footer-cols > div',
+    '.section-head > *', '.chapter-head > *', '.price-line', '.flavor', '.promise', '.occasion', '.steps li',
+    '.loaf-inner > *', '.label-grid > div', '.statement', '.about-intro-head > *', '.about-intro-body > *',
+    '.collage > *', '.about-kitchen > .arch', '.about-kitchen-text > *', '.about-cta > *', '.footer-cols > div',
+    '.pantry-list li', '.free-of', '.chapter-facts', '.bundle', '.chapter-note', '.chapter-date', '.holiday-close > *',
+    '.mode-wrap', '.holiday-hero > *',
   ];
   const targets = document.querySelectorAll(groups.join(','));
   targets.forEach(el => {
     const siblings = [...el.parentElement.children].filter(c => c.matches(groups.join(',')));
-    el.style.setProperty('--stagger', `${Math.max(siblings.indexOf(el), 0) * 90}ms`);
+    el.style.setProperty('--stagger', `${Math.min(Math.max(siblings.indexOf(el), 0), 8) * 110}ms`);
     el.classList.add('reveal');
   });
 

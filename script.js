@@ -5,8 +5,14 @@ const FORM_ENDPOINT = '';
 const ORDER_EMAIL = 'suhanitiwari@utexas.edu';
 
 const MINIMUM = 24;
-const DELIVERY_FEE = 30;
 const DELIVERY_MINIMUM = 100;
+
+// Hand delivery is priced by driving distance from the UT Austin campus.
+const ZONES = [
+  { id: 'near', label: 'Within 10 miles of UT Austin', fee: 25 },
+  { id: 'far', label: 'More than 10 miles from UT Austin', fee: 45 },
+  { id: 'domain', label: 'The Domain', fee: 50 },
+];
 
 const FLAVORS = [
   { id: 'hazelnut', name: 'Chocolate hazelnut coffee', tone: '#5E3B2C' },
@@ -22,7 +28,7 @@ const KINDS = {
 };
 
 const PRESETS = [
-  { id: 'sampler', name: 'The Sampler', note: 'Six of each cookie',
+  { id: 'sampler', name: 'The Sampler', note: 'Six of each cookie', tag: 'Every flavor',
     set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6 } },
   { id: 'meeting', name: 'The Morning Meeting', note: 'A dozen muffins and a dozen cookies',
     set: { 'hazelnut-muffin': 6, 'double-muffin': 6, 'butterscotch-cookie': 6, 'strawberry-cookie': 6 } },
@@ -30,6 +36,16 @@ const PRESETS = [
     set: { 'hazelnut-cookie': 12, 'butterscotch-cookie': 12, 'double-cookie': 12, 'strawberry-cookie': 12 } },
   { id: 'brunch', name: 'The Brunch', note: 'Two dozen muffins and a loaf',
     set: { 'hazelnut-muffin': 6, 'butterscotch-muffin': 6, 'double-muffin': 6, 'strawberry-muffin': 6, loaf: 1 } },
+  // Holiday boxes live on holidays.html and arrive here as ?box=<id>.
+  { id: 'thanksgiving-table', name: 'The Thanksgiving Table', note: 'Six of each cookie and a loaf', holiday: true,
+    set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6, loaf: 1 } },
+  { id: 'thanksgiving-morning', name: 'Thanksgiving Morning', note: 'Six of each muffin and a loaf', holiday: true,
+    set: { 'hazelnut-muffin': 6, 'butterscotch-muffin': 6, 'double-muffin': 6, 'strawberry-muffin': 6, loaf: 1 } },
+  { id: 'holiday-party', name: 'The Holiday Party', note: 'Twelve of each cookie', holiday: true,
+    set: { 'hazelnut-cookie': 12, 'butterscotch-cookie': 12, 'double-cookie': 12, 'strawberry-cookie': 12 } },
+  { id: 'open-house', name: 'The Open House', note: 'Two dozen cookies, two dozen muffins and two loaves', holiday: true,
+    set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6,
+      'hazelnut-muffin': 6, 'butterscotch-muffin': 6, 'double-muffin': 6, 'strawberry-muffin': 6, loaf: 2 } },
 ];
 
 // Box sizes for the preview: a dozen cookies, six muffins, one loaf.
@@ -93,8 +109,9 @@ function group(title, note, rows) {
 function buildPresets() {
   $('#presets').innerHTML = `
     <div class="group-head"><h3>Ready-made boxes</h3><p>One click to start</p></div>
-    <div class="preset-grid">${PRESETS.map(p => `
+    <div class="preset-grid">${PRESETS.filter(p => !p.holiday).map(p => `
       <button type="button" class="preset" data-preset="${p.id}">
+        ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
         <span class="preset-name">${p.name}</span>
         <span class="preset-note">${p.note}</span>
         <span class="preset-price">${money(presetPrice(p))}</span>
@@ -168,6 +185,14 @@ function renderStage(t) {
   document.querySelectorAll('.preset').forEach(b => b.classList.toggle('is-active', b.dataset.preset === activePreset));
 }
 
+function buildZones() {
+  $('#zones').innerHTML = ZONES.map((z, i) => `
+    <label>
+      <span class="zone-name"><input type="radio" name="zone" value="${z.id}"${i === 0 ? ' checked' : ''}>${z.label}</span>
+      <span class="zone-fee">${money(z.fee)}</span>
+    </label>`).join('');
+}
+
 function buildList() {
   $('#builder-list').innerHTML = [
     group('Cookies', '$6 each, in half dozens', FLAVORS.map(f => row(`${f.id}-cookie`, f.name, f.tone, 'cookies'))),
@@ -189,9 +214,10 @@ function totals() {
   });
   const items = count.cookie + count.muffin;
   const delivery = document.querySelector('input[name="fulfil"]:checked').value === 'delivery';
-  const fee = delivery ? DELIVERY_FEE : 0;
+  const zone = ZONES.find(z => z.id === document.querySelector('input[name="zone"]:checked').value);
+  const fee = delivery ? zone.fee : 0;
   const total = subtotal + fee;
-  return { items, cookies: count.cookie, muffins: count.muffin, loaves: count.loaf, subtotal, delivery, fee, total };
+  return { items, cookies: count.cookie, muffins: count.muffin, loaves: count.loaf, subtotal, delivery, zone, fee, total };
 }
 
 function problem(t) {
@@ -214,6 +240,11 @@ function render() {
   $('#sum-loaves').textContent = t.loaves;
   $('#sum-subtotal').textContent = money(t.subtotal);
   $('#sum-delivery').textContent = money(t.fee);
+  $('#sum-delivery-label').textContent = t.delivery ? 'Hand delivery' : 'Pickup';
+  $('#zones').hidden = !t.delivery;
+  $('#mode-note').textContent = t.delivery
+    ? `Hand delivered by me, on orders of $${DELIVERY_MINIMUM} or more.`
+    : 'Pickup in Austin is always free.';
   $('#sum-total').textContent = money(t.total);
 
   const status = $('#sum-status');
@@ -245,7 +276,7 @@ function renderFormOrder(t, issue) {
     return;
   }
   const lines = orderLines().map(l => `<li><span>${l.text}</span><span>${money(l.cost)}</span></li>`);
-  lines.push(`<li><span>${t.delivery ? 'Hand delivery' : 'Pickup in Austin'}</span><span>${money(t.fee)}</span></li>`);
+  lines.push(`<li><span>${t.delivery ? `Hand delivery, ${t.zone.label}` : 'Pickup in Austin'}</span><span>${money(t.fee)}</span></li>`);
   lines.push(`<li class="form-total"><span>Total</span><span>${money(t.total)}</span></li>`);
   box.innerHTML = `<ul>${lines.join('')}</ul>`;
 }
@@ -274,7 +305,9 @@ document.addEventListener('click', e => {
   }
 });
 
-document.querySelectorAll('input[name="fulfil"]').forEach(r => r.addEventListener('change', render));
+document.addEventListener('change', e => {
+  if (e.target.matches('input[name="fulfil"], input[name="zone"]')) render();
+});
 
 // Event details
 const form = $('#order-form');
@@ -313,7 +346,7 @@ form.addEventListener('submit', async e => {
   const data = Object.fromEntries(new FormData(form));
   const summary = [
     ...orderLines().map(l => `${l.text}: ${money(l.cost)}`),
-    `${t.delivery ? 'Hand delivery' : 'Pickup'}: ${money(t.fee)}`,
+    `${t.delivery ? `Hand delivery, ${t.zone.label}` : 'Pickup'}: ${money(t.fee)}`,
     `Total: ${money(t.total)}`,
   ].join('\n');
   const body = [
@@ -348,8 +381,14 @@ form.addEventListener('submit', async e => {
 // The phone summary bar shows only while the builder is on screen.
 new IntersectionObserver(([entry]) => {
   $('#mini-bar').classList.toggle('is-on', entry.isIntersecting);
+  document.body.classList.toggle('bar-on', entry.isIntersecting);
 }, { rootMargin: '-30% 0px -30% 0px' }).observe($('.builder'));
 
 buildPresets();
+buildZones();
 buildList();
 render();
+
+// A box chosen on the holidays page arrives as ?box=<id>.
+const chosen = new URLSearchParams(location.search).get('box');
+if (PRESETS.some(p => p.id === chosen)) applyPreset(chosen);

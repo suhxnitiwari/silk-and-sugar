@@ -48,6 +48,7 @@
       <a href="#menu">Muffins</a>
       <a href="#loaf">The loaf</a>
       <a href="#offices">Events</a>
+      <a href="holidays.html">Holidays</a>
       <a href="about.html">The baker</a>
       <a href="#order" class="nav-order">Order</a>
     </nav>
@@ -104,6 +105,7 @@
           <span class="seal" style="--tone:#5E3B2C" aria-hidden="true">I</span>
           <h3>Chocolate hazelnut coffee</h3>
           <p>An espresso dough folded with dark chocolate and toasted hazelnuts.</p>
+          <p class="sourcing">Grass-fed Kerrygold butter, organic cane sugar, pasture-raised eggs, fine espresso, Guittard dark chocolate, toasted hazelnuts</p>
           <dl>
             <div><dt>The melt</dt><dd>Guittard dark chocolate</dd></div>
             <div><dt>The crunch</dt><dd>Toasted hazelnuts</dd></div>
@@ -113,6 +115,7 @@
           <span class="seal" style="--tone:#B07A45" aria-hidden="true">II</span>
           <h3>Butterscotch toffee</h3>
           <p>Brown butter and dark brown sugar for a deep butterscotch dough, finished with flaky salt.</p>
+          <p class="sourcing">Browned Kerrygold butter, dark brown sugar, pasture-raised eggs, house-made toffee, salted caramel, flaky sea salt</p>
           <dl>
             <div><dt>The melt</dt><dd>Salted caramel</dd></div>
             <div><dt>The crunch</dt><dd>Buttery toffee</dd></div>
@@ -122,6 +125,7 @@
           <span class="seal" style="--tone:#2F1A12" aria-hidden="true">III</span>
           <h3>Double chocolate walnut</h3>
           <p>Two Guittard chocolates, chopped by hand, in a rich cocoa dough.</p>
+          <p class="sourcing">Grass-fed Kerrygold butter, organic cane sugar, pasture-raised eggs, cocoa, two Guittard chocolates, toasted walnuts</p>
           <dl>
             <div><dt>The melt</dt><dd>Two Guittard chocolates</dd></div>
             <div><dt>The crunch</dt><dd>Toasted walnuts</dd></div>
@@ -129,13 +133,34 @@
         </article>
         <article class="flavor">
           <span class="seal" style="--tone:#D29BA2" aria-hidden="true">IV</span>
+          <p class="tag">Naturally pink</p>
           <h3>Strawberry shortcake crunch</h3>
           <p>A blush pink dough colored only by real freeze-dried strawberries.</p>
+          <p class="sourcing">Grass-fed Kerrygold butter, organic cane sugar, pasture-raised eggs, freeze-dried strawberries, Guittard white chocolate, shortcake crumble</p>
           <dl>
             <div><dt>The melt</dt><dd>Guittard white chocolate</dd></div>
             <div><dt>The crunch</dt><dd>Golden shortcake crumble</dd></div>
           </dl>
         </article>
+      </div>
+    </section>
+
+    <section class="pantry" id="ingredients">
+      <div class="pantry-inner">
+        <header class="section-head">
+          <p class="eyebrow">What goes in</p>
+          <h2>Real ingredients, <em>chosen one by one</em></h2>
+          <p>Every bake starts from scratch in my kitchen with organic ingredients. Here's what I reach for, and what never makes it into the bowl.</p>
+        </header>
+        <ul class="pantry-list">
+          <li><strong>Organic cane sugar</strong><span>With light and dark brown sugar</span></li>
+          <li><strong>Pasture-raised eggs</strong><span>In every dough and batter</span></li>
+          <li><strong>Grass-fed Kerrygold butter</strong><span>Irish, browned for butterscotch</span></li>
+          <li><strong>Guittard chocolate</strong><span>Chopped by hand, never chips</span></li>
+          <li><strong>Pure maple syrup</strong><span>For warmth, not sweetness</span></li>
+          <li><strong>House-made toffee</strong><span>Cooked in my kitchen</span></li>
+        </ul>
+        <p class="free-of"><b>Always free of</b><span>Artificial flavors</span><span>Dyes</span><span>Preservatives</span><span>Seed oils</span></p>
       </div>
     </section>
 
@@ -191,7 +216,7 @@
         <li><span class="numeral">I</span><h3>Build your order</h3><p>Choose your flavors below. Orders begin at two dozen, in any mix of cookies and muffins.</p></li>
         <li><span class="numeral">II</span><h3>We confirm your date</h3><p>Send your event details and you'll hear back to confirm the bake date.</p></li>
         <li><span class="numeral">III</span><h3>Pay to reserve it</h3><p>Pay your full order through a secure Stripe invoice to lock in your date.</p></li>
-        <li><span class="numeral">IV</span><h3>Pickup or hand delivery</h3><p>Pickup in Austin is free. Hand delivery is $30 on orders of $100 or more.</p></li>
+        <li><span class="numeral">IV</span><h3>Pickup or hand delivery</h3><p>Pickup in Austin is free. Hand delivery starts at $25 on orders of $100 or more.</p></li>
       </ol>
     </section>
 
@@ -216,6 +241,14 @@
         </div>
 
         <div class="builder-main">
+          <div class="mode-wrap">
+            <div class="mode" role="radiogroup" aria-label="Pickup or delivery">
+              <label><input type="radio" name="fulfil" value="pickup" checked><span>Pickup</span></label>
+              <label><input type="radio" name="fulfil" value="delivery"><span>Delivery</span></label>
+            </div>
+            <div class="zones" id="zones" hidden></div>
+            <p class="mode-note" id="mode-note">Pickup in Austin is always free.</p>
+          </div>
           <div class="presets" id="presets"></div>
           <div class="builder-list" id="builder-list"></div>
 
@@ -228,14 +261,8 @@
             <div><dt>Subtotal</dt><dd id="sum-subtotal">$0</dd></div>
           </dl>
 
-          <fieldset class="fulfil">
-            <legend>Pickup or delivery</legend>
-            <label><input type="radio" name="fulfil" value="pickup" checked> Pickup in Austin, free</label>
-            <label><input type="radio" name="fulfil" value="delivery"> Hand delivery, $30</label>
-          </fieldset>
-
           <dl class="totals totals-final">
-            <div><dt>Delivery</dt><dd id="sum-delivery">$0</dd></div>
+            <div><dt id="sum-delivery-label">Pickup</dt><dd id="sum-delivery">$0</dd></div>
             <div class="grand"><dt>Total</dt><dd id="sum-total">$0</dd></div>
           </dl>
 
@@ -336,11 +363,12 @@
         <a href="#order">Request an order</a>
         <a href="#menu">The menu</a>
         <a href="#loaf">The loaf</a>
+        <a href="holidays.html">Holidays</a>
       </div>
       <div>
         <h4>Pickup and delivery</h4>
         <p>Pickup in Austin by appointment</p>
-        <p>Hand delivery with orders of $100 and up</p>
+        <p>Hand delivery from $25 with orders of $100 and up</p>
         <p>Baked and delivered fresh in Austin</p>
       </div>
       <div>
@@ -354,6 +382,7 @@
 
   <script src="treats.js"></script>
   <script src="script.js"></script>
+  <script src="site.js"></script>
   <script src="motion.js"></script>
 </body>
 </html>
