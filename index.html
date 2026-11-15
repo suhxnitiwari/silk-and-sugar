@@ -47,7 +47,7 @@
       <a href="#menu">Cookies</a>
       <a href="#menu">Muffins</a>
       <a href="#loaf">The loaf</a>
-      <a href="#how">Events</a>
+      <a href="#offices">Events</a>
       <a href="about.html">The baker</a>
       <a href="#order" class="nav-order">Order</a>
     </nav>
@@ -150,11 +150,42 @@
       </div>
     </section>
 
+    <section class="section offices" id="offices">
+      <header class="section-head">
+        <p class="eyebrow">For offices and teams</p>
+        <h2>For the moments your team gathers</h2>
+        <p>Client meetings, recruiting days, team celebrations and showers. Each order arrives fresh, with one Stripe invoice for the full amount.</p>
+      </header>
+      <div class="occasions">
+        <article class="occasion">
+          <h3>Client meetings</h3>
+          <p>Fresh muffins and cookies on the table before your guests arrive.</p>
+          <button type="button" class="occasion-link" data-preset="meeting">Build The Morning Meeting <span>$132</span></button>
+        </article>
+        <article class="occasion">
+          <h3>Recruiting and onboarding</h3>
+          <p>A warm welcome for candidates and new hires, with every flavor to try.</p>
+          <button type="button" class="occasion-link" data-preset="sampler">Build The Sampler <span>$144</span></button>
+        </article>
+        <article class="occasion">
+          <h3>Team celebrations</h3>
+          <p>Launches, milestones and thank-yous, baked fresh for the day.</p>
+          <button type="button" class="occasion-link" data-preset="celebration">Build The Celebration <span>$288</span></button>
+        </article>
+        <article class="occasion">
+          <h3>Showers and parties</h3>
+          <p>Bridal and baby showers, birthdays and every reason to gather.</p>
+          <button type="button" class="occasion-link" data-preset="brunch">Build The Brunch <span>$155</span></button>
+        </article>
+      </div>
+      <p class="offices-note">Planning for a crowd? Allow one to two pieces per guest.</p>
+    </section>
+
     <section class="section how" id="how">
       <header class="section-head">
-        <p class="eyebrow">Events</p>
+        <p class="eyebrow">Ordering</p>
         <h2>How ordering works</h2>
-        <p>Silk &amp; Sugar bakes for groups: bridal and baby showers, client meetings, office celebrations and parties.</p>
+        <p>Four simple steps from your first flavor to your doorstep.</p>
       </header>
       <ol class="steps">
         <li><span class="numeral">I</span><h3>Build your order</h3><p>Choose your flavors below. Orders begin at two dozen, in any mix of cookies and muffins.</p></li>
@@ -166,13 +197,27 @@
 
     <section class="section order" id="order">
       <header class="section-head">
-        <p class="eyebrow">Build your order</p>
-        <h2>Choose your flavors</h2>
-        <p>Orders begin at two dozen cookies and muffins, mixed any way you like. The loaf is also available on its own.</p>
+        <p class="eyebrow">Build your box</p>
+        <h2>Fill it your way</h2>
+        <p>Start with a ready-made box or choose every flavor yourself, and watch your box fill as you go. Orders begin at two dozen cookies and muffins. The loaf is also available on its own.</p>
       </header>
 
       <div class="builder">
-        <div class="builder-list" id="builder-list"></div>
+        <div class="stage-col">
+          <div class="stage" id="stage">
+            <div class="stage-head">
+              <p class="eyebrow">Your box</p>
+              <p class="stage-count"><span id="stage-count">Empty for now</span><span class="stage-total" id="stage-total">$0</span></p>
+              <div class="meter" aria-hidden="true"><span id="meter-fill"></span></div>
+              <p class="meter-note" id="meter-note">Two dozen cookies and muffins to begin</p>
+            </div>
+            <div class="boxes" id="boxes" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="builder-main">
+          <div class="presets" id="presets"></div>
+          <div class="builder-list" id="builder-list"></div>
 
         <aside class="summary" aria-live="polite">
           <h3>Your order</h3>
@@ -197,6 +242,13 @@
           <p class="status" id="sum-status"></p>
           <a class="btn btn-dark btn-block" href="#details" id="to-details">Continue to event details</a>
         </aside>
+        </div>
+      </div>
+
+      <div class="mini-bar" id="mini-bar">
+        <span class="mini-count" id="mini-count">Your box is empty</span>
+        <span class="mini-total" id="mini-total">$0</span>
+        <a href="#stage" class="mini-link">See your box</a>
       </div>
     </section>
 
@@ -300,6 +352,8 @@
     <p class="copyright">&copy; 2026 Silk &amp; Sugar</p>
   </footer>
 
+  <script src="treats.js"></script>
   <script src="script.js"></script>
+  <script src="motion.js"></script>
 </body>
 </html>

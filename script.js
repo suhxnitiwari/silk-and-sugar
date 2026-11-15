@@ -21,9 +21,51 @@ const KINDS = {
   loaf: { label: 'Loaves', price: 35, step: 1 },
 };
 
+const PRESETS = [
+  { id: 'sampler', name: 'The Sampler', note: 'Six of each cookie',
+    set: { 'hazelnut-cookie': 6, 'butterscotch-cookie': 6, 'double-cookie': 6, 'strawberry-cookie': 6 } },
+  { id: 'meeting', name: 'The Morning Meeting', note: 'A dozen muffins and a dozen cookies',
+    set: { 'hazelnut-muffin': 6, 'double-muffin': 6, 'butterscotch-cookie': 6, 'strawberry-cookie': 6 } },
+  { id: 'celebration', name: 'The Celebration', note: 'Four dozen cookies, twelve of each',
+    set: { 'hazelnut-cookie': 12, 'butterscotch-cookie': 12, 'double-cookie': 12, 'strawberry-cookie': 12 } },
+  { id: 'brunch', name: 'The Brunch', note: 'Two dozen muffins and a loaf',
+    set: { 'hazelnut-muffin': 6, 'butterscotch-muffin': 6, 'double-muffin': 6, 'strawberry-muffin': 6, loaf: 1 } },
+];
+
+// Box sizes for the preview: a dozen cookies, six muffins, one loaf.
+const BOX = { cookie: { slots: 12, label: 'Cookies' }, muffin: { slots: 6, label: 'Muffins' }, loaf: { slots: 1, label: 'Banana bread' } };
+const MAX_BOXES = 9;
+
 const qty = {};
 FLAVORS.forEach(f => { qty[`${f.id}-cookie`] = 0; qty[`${f.id}-muffin`] = 0; });
 qty.loaf = 0;
+
+// Pieces in the order they were added, so new ones land at the end of the box.
+const packed = { cookie: [], muffin: [], loaf: [] };
+let shown = { cookie: 0, muffin: 0, loaf: 0 };
+let shownBoxes = { cookie: 0, muffin: 0, loaf: 0 };
+let activePreset = null;
+
+function setQty(key, n) {
+  const kind = kindOf(key);
+  const flavor = kind === 'loaf' ? 'loaf' : key.split('-')[0];
+  const diff = n - qty[key];
+  for (let i = 0; i < diff; i++) packed[kind].push(flavor);
+  for (let i = 0; i < -diff; i++) packed[kind].splice(packed[kind].lastIndexOf(flavor), 1);
+  qty[key] = n;
+}
+
+function applyPreset(id) {
+  const preset = PRESETS.find(p => p.id === id);
+  Object.keys(qty).forEach(key => setQty(key, 0));
+  shown = { cookie: 0, muffin: 0, loaf: 0 };
+  shownBoxes = { cookie: 0, muffin: 0, loaf: 0 };
+  Object.entries(preset.set).forEach(([key, n]) => setQty(key, n));
+  activePreset = id;
+  render();
+}
+
+const presetPrice = p => Object.entries(p.set).reduce((sum, [key, n]) => sum + n * KINDS[kindOf(key)].price, 0);
 
 const money = n => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
 const $ = sel => document.querySelector(sel);
@@ -46,6 +88,84 @@ function group(title, note, rows) {
       <div class="group-head"><h3>${title}</h3><p>${note}</p></div>
       ${rows.join('')}
     </div>`;
+}
+
+function buildPresets() {
+  $('#presets').innerHTML = `
+    <div class="group-head"><h3>Ready-made boxes</h3><p>One click to start</p></div>
+    <div class="preset-grid">${PRESETS.map(p => `
+      <button type="button" class="preset" data-preset="${p.id}">
+        <span class="preset-name">${p.name}</span>
+        <span class="preset-note">${p.note}</span>
+        <span class="preset-price">${money(presetPrice(p))}</span>
+      </button>`).join('')}
+    </div>`;
+}
+
+function slot(kind, flavor, isNew, delay) {
+  if (!flavor) return '<span class="slot"></span>';
+  const symbol = kind === 'loaf' ? 't-loaf' : `t-${kind}-${flavor}`;
+  return `<span class="slot filled${isNew ? ' drop' : ''}" style="--d:${delay}ms"><svg><use href="#${symbol}"/></svg></span>`;
+}
+
+function renderStage(t) {
+  const boxes = [];
+  ['cookie', 'muffin', 'loaf'].forEach(kind => {
+    const list = packed[kind];
+    const size = BOX[kind].slots;
+    const count = Math.ceil(list.length / size);
+    for (let b = 0; b < count; b++) boxes.push({ kind, start: b * size, n: count, b });
+  });
+
+  let fresh = 0;
+  const visible = boxes.length > MAX_BOXES ? boxes.slice(0, MAX_BOXES - 1) : boxes;
+  const html = visible.map(({ kind, start, n, b }) => {
+    const size = BOX[kind].slots;
+    const slots = [];
+    for (let i = start; i < start + size; i++) {
+      const isNew = i < packed[kind].length && i >= shown[kind];
+      slots.push(slot(kind, packed[kind][i], isNew, isNew ? Math.min(fresh++ * 45, 900) : 0));
+    }
+    const tag = kind === 'loaf' ? BOX.loaf.label : `${BOX[kind].label}${n > 1 ? `, box ${b + 1} of ${n}` : ''}`;
+    const isNewBox = b >= shownBoxes[kind];
+    return `<div class="box box-${kind}${isNewBox ? ' box-new' : ''}"><span class="box-lid">Silk &amp; Sugar</span><div class="tray">${slots.join('')}</div><span class="box-tag">${tag}</span></div>`;
+  });
+  if (boxes.length > MAX_BOXES) {
+    html.push(`<div class="box box-more"><span>+${boxes.length - visible.length} more boxes</span></div>`);
+  }
+  if (!boxes.length) {
+    html.push(`<div class="box box-cookie box-empty"><span class="box-lid">Silk &amp; Sugar</span><div class="tray">${'<span class="slot"></span>'.repeat(12)}</div><span class="box-tag">Your box is waiting</span></div>`);
+  }
+
+  const wrap = $('#boxes');
+  wrap.dataset.count = Math.min(Math.max(html.length, 1), MAX_BOXES);
+  wrap.innerHTML = html.join('');
+  shown = { cookie: packed.cookie.length, muffin: packed.muffin.length, loaf: packed.loaf.length };
+  Object.keys(BOX).forEach(kind => { shownBoxes[kind] = Math.ceil(packed[kind].length / BOX[kind].slots); });
+
+  const pieces = [];
+  if (t.cookies) pieces.push(`${t.cookies} cookie${t.cookies === 1 ? '' : 's'}`);
+  if (t.muffins) pieces.push(`${t.muffins} muffin${t.muffins === 1 ? '' : 's'}`);
+  if (t.loaves) pieces.push(`${t.loaves} loa${t.loaves === 1 ? 'f' : 'ves'}`);
+  const countText = pieces.length ? pieces.join(', ') : 'Empty for now';
+  $('#stage-count').textContent = countText;
+  $('#mini-count').textContent = pieces.length ? countText : 'Your box is empty';
+  [$('#stage-total'), $('#mini-total')].forEach(el => {
+    el.textContent = money(t.subtotal);
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+  });
+
+  $('#meter-fill').style.width = `${Math.min(t.items / MINIMUM, 1) * 100}%`;
+  let note = 'Two dozen cookies and muffins to begin';
+  if (t.items >= MINIMUM) note = 'Ready for your event';
+  else if (t.items > 0) note = `${MINIMUM - t.items} more to reach two dozen`;
+  else if (t.loaves) note = 'A loaf on its own is always welcome';
+  $('#meter-note').textContent = note;
+  $('#stage').classList.toggle('is-ready', t.items >= MINIMUM || (t.items === 0 && t.loaves > 0));
+
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('is-active', b.dataset.preset === activePreset));
 }
 
 function buildList() {
@@ -103,6 +223,7 @@ function render() {
   $('#address-field').hidden = !t.delivery;
 
   renderFormOrder(t, issue);
+  renderStage(t);
 }
 
 function orderLines() {
@@ -134,12 +255,20 @@ document.addEventListener('click', e => {
   if (btn) {
     const key = btn.dataset.key;
     const step = KINDS[kindOf(key)].step;
-    qty[key] = Math.max(0, qty[key] + step * Number(btn.dataset.dir));
+    setQty(key, Math.max(0, qty[key] + step * Number(btn.dataset.dir)));
+    activePreset = null;
     render();
     return;
   }
+  const preset = e.target.closest('[data-preset]');
+  if (preset) {
+    applyPreset(preset.dataset.preset);
+    if (!preset.classList.contains('preset')) $('#order').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   if (e.target.closest('[data-add-loaf]')) {
-    qty.loaf += 1;
+    setQty('loaf', qty.loaf + 1);
+    activePreset = null;
     render();
     $('#order').scrollIntoView({ behavior: 'smooth' });
   }
@@ -216,5 +345,11 @@ form.addEventListener('submit', async e => {
   $('#thanks').scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
+// The phone summary bar shows only while the builder is on screen.
+new IntersectionObserver(([entry]) => {
+  $('#mini-bar').classList.toggle('is-on', entry.isIntersecting);
+}, { rootMargin: '-30% 0px -30% 0px' }).observe($('.builder'));
+
+buildPresets();
 buildList();
 render();
