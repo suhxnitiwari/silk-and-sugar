@@ -639,6 +639,8 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
 .free-of b { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-right: 18px; }
 .free-of span { padding: 0 18px; }
 .free-of span + span { border-left: 0.5px solid var(--gold); }
+.pantry-lines { grid-column: 1 / -1; }
+.pantry-lines .free-of + .free-of { margin-top: 0; padding-top: 14px; border-top: 0; }
 
 /* Pickup or delivery switch, sweetgreen style */
 .mode-wrap { margin-bottom: 40px; }
@@ -905,6 +907,9 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
   .free-of { flex-direction: column; gap: 6px; }
   .free-of b { margin: 0 0 4px; }
   .free-of span + span { border-left: 0; }
+  .pantry-lines .free-of { flex-direction: row; gap: 2px 18px; font-size: 20px; }
+  .pantry-lines .free-of b { flex-basis: 100%; text-align: center; margin: 0 0 4px; }
+  .pantry-lines .free-of span { padding: 0; }
   .zones .zone-name, .zones .zone-fee { font-size: 18px; }
   .holiday-hero { padding: 64px 16px 72px; }
   .chapter { padding: 64px 16px; }
