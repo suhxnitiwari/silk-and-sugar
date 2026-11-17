@@ -62,6 +62,20 @@ let shown = { cookie: 0, muffin: 0, loaf: 0 };
 let shownBoxes = { cookie: 0, muffin: 0, loaf: 0 };
 let activePreset = null;
 
+// The guided builder: choose a size, fill it, add a loaf, review.
+const SIZES = [
+  { n: 24, name: 'Two dozen', guests: '12 to 24 guests' },
+  { n: 48, name: 'Four dozen', guests: '24 to 48 guests' },
+  { n: 72, name: 'Six dozen', guests: '36 to 72 guests' },
+  { n: 96, name: 'Eight dozen', guests: '48 to 96 guests' },
+];
+const STEP_NEXT = { 1: 'Next: fill your box', 2: 'Next: banana bread', 3: 'Next: review' };
+let boxSize = null;
+let step = 1;
+
+const sizeName = n => (SIZES.find(z => z.n === n) || { name: `${n}-piece` }).name.toLowerCase();
+const fitSize = items => (SIZES.find(z => z.n >= items) || { n: Math.ceil(items / 24) * 24 }).n;
+
 function setQty(key, n) {
   const kind = kindOf(key);
   const flavor = kind === 'loaf' ? 'loaf' : key.split('-')[0];
@@ -78,6 +92,8 @@ function applyPreset(id) {
   shownBoxes = { cookie: 0, muffin: 0, loaf: 0 };
   Object.entries(preset.set).forEach(([key, n]) => setQty(key, n));
   activePreset = id;
+  const items = Object.entries(preset.set).filter(([key]) => kindOf(key) !== 'loaf').reduce((sum, [, n]) => sum + n, 0);
+  boxSize = items ? fitSize(items) : 0;
   render();
 }
 
@@ -106,9 +122,41 @@ function group(title, note, rows) {
     </div>`;
 }
 
+function buildSizes() {
+  $('#sizes').innerHTML = SIZES.map(z => `
+    <button type="button" class="size" data-size="${z.n}">
+      <span class="size-count">${z.n}</span>
+      <span class="size-name">${z.name}</span>
+      <span class="size-guests">${z.guests}</span>
+      <span class="size-price">${money(z.n * KINDS.muffin.price)} to ${money(z.n * KINDS.cookie.price)}</span>
+    </button>`).join('');
+}
+
+function goStep(n, scroll = true) {
+  step = n;
+  document.querySelectorAll('.step').forEach(el => {
+    const on = Number(el.dataset.step) === n;
+    el.hidden = !on;
+    if (on) { el.classList.remove('step-in'); void el.offsetWidth; el.classList.add('step-in'); }
+  });
+  document.querySelectorAll('.wizard-steps button').forEach(b => {
+    const k = Number(b.dataset.step);
+    b.classList.toggle('is-current', k === n);
+    b.classList.toggle('is-done', k < n);
+    b.setAttribute('aria-current', k === n ? 'step' : 'false');
+  });
+  $('#step-back').hidden = n === 1;
+  $('#step-next').hidden = n === 4;
+  $('#step-next').textContent = STEP_NEXT[n] || 'Next';
+  if (scroll) {
+    const top = $('#wizard').getBoundingClientRect().top;
+    if (top < 0 || top > window.innerHeight * 0.6) $('#wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function buildPresets() {
   $('#presets').innerHTML = `
-    <div class="group-head"><h3>Ready-made boxes</h3><p>One click to start</p></div>
+    <div class="group-head"><h3>Or start with a ready-made box</h3><p>One click, then adjust</p></div>
     <div class="preset-grid">${PRESETS.filter(p => !p.holiday).map(p => `
       <button type="button" class="preset" data-preset="${p.id}">
         ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
@@ -174,10 +222,11 @@ function renderStage(t) {
     el.classList.add('bump');
   });
 
-  $('#meter-fill').style.width = `${Math.min(t.items / MINIMUM, 1) * 100}%`;
-  let note = 'Two dozen cookies and muffins to begin';
-  if (t.items >= MINIMUM) note = 'Ready for your event';
-  else if (t.items > 0) note = `${MINIMUM - t.items} more to reach two dozen`;
+  const target = boxSize || MINIMUM;
+  $('#meter-fill').style.width = `${Math.min(t.items / target, 1) * 100}%`;
+  let note = boxSize ? `A ${sizeName(boxSize)} box, waiting to be filled` : 'Choose a size to begin';
+  if (t.items >= target) note = boxSize ? `Your ${sizeName(boxSize)} box is full` : 'Ready for your event';
+  else if (t.items > 0) note = boxSize ? `${t.items} of ${boxSize}, room for ${target - t.items} more` : `${MINIMUM - t.items} more to reach two dozen`;
   else if (t.loaves) note = 'A loaf on its own is always welcome';
   $('#meter-note').textContent = note;
   const stage = $('#stage');
@@ -200,13 +249,29 @@ function buildZones() {
     </label>`).join('');
 }
 
+function tile(key, name, art, unit, price) {
+  return `
+    <div class="tile">
+      <button type="button" class="tile-art" data-key="${key}" data-dir="1" aria-label="Add six ${name} ${unit}">${art}<span class="tile-plus" aria-hidden="true">+6</span></button>
+      <h5>${name}</h5>
+      <p class="tile-price">${price}</p>
+      <span class="stepper">
+        <button type="button" data-key="${key}" data-dir="-1" aria-label="Fewer ${name} ${unit}">&minus;</button>
+        <output id="q-${key}">0</output>
+        <button type="button" data-key="${key}" data-dir="1" aria-label="More ${name} ${unit}">+</button>
+      </span>
+    </div>`;
+}
+
 function buildList() {
-  $('#builder-list').innerHTML = [
-    group('Cookies', '$6 each, in half dozens', FLAVORS.map(f => row(`${f.id}-cookie`, f.name, f.tone, 'cookies'))),
-    group('Muffins', '$5 each, in half dozens', FLAVORS.map(f => row(`${f.id}-muffin`, f.name, f.tone, 'muffins'))),
-    group('Banana bread', '$35 a loaf, order one on its own',
-      [row('loaf', 'Upside-down salted caramel banana bread', '#C99A62', 'loaves')]),
-  ].join('');
+  const cookieArt = f => `<img src="images/cookie-${f.id}.jpg" alt="" loading="lazy">`;
+  const muffinArt = f => `<svg viewBox="0 0 100 100"><use href="#t-muffin-${f.id}"/></svg>`;
+  $('#builder-list').innerHTML = `
+    <div class="group-head"><h4>Cookies</h4><p>$6 each, six at a time</p></div>
+    <div class="tiles">${FLAVORS.map(f => tile(`${f.id}-cookie`, f.name, cookieArt(f), 'cookies', '$36 for six')).join('')}</div>
+    <div class="group-head"><h4>Muffins</h4><p>$5 each, six at a time</p></div>
+    <div class="tiles">${FLAVORS.map(f => tile(`${f.id}-muffin`, f.name, muffinArt(f), 'muffins', '$30 for six')).join('')}</div>`;
+  $('#loaf-pick').innerHTML = row('loaf', 'Upside-down salted caramel banana bread', '#C99A62', 'loaves');
 }
 
 const kindOf = key => (key === 'loaf' ? 'loaf' : key.split('-')[1]);
@@ -262,11 +327,34 @@ function render() {
 
   renderFormOrder(t, issue);
   renderStage(t);
+  renderWizard(t);
   const count = $('#nav-count');
   count.textContent = t.items + t.loaves;
   count.classList.remove('bump');
   void count.offsetWidth;
   count.classList.add('bump');
+}
+
+function renderWizard(t) {
+  document.querySelectorAll('.size').forEach(b => b.classList.toggle('is-active', Number(b.dataset.size) === boxSize));
+  const target = boxSize || MINIMUM;
+  $('#fill-bar').style.width = `${Math.min(t.items / target, 1) * 100}%`;
+  let fill = 'Tap a flavor to add six. Mix cookies and muffins any way you like.';
+  if (boxSize && t.items >= boxSize) fill = `Your ${sizeName(boxSize)} box is full. Beautifully done.`;
+  else if (boxSize && t.items > 0) fill = `${t.items} of ${boxSize} in. Room for ${boxSize - t.items} more.`;
+  else if (boxSize) fill = `Your ${sizeName(boxSize)} box has room for ${boxSize}. Tap a flavor to add six.`;
+  $('#fill-note').textContent = fill;
+  $('#wizard').classList.toggle('is-full', Boolean(boxSize) && t.items >= boxSize);
+
+  const lines = orderLines();
+  $('#review').innerHTML = lines.length
+    ? lines.map(l => `<li><span>${l.text}</span><span>${money(l.cost)}</span></li>`).join('')
+    : '<li class="review-empty"><span>Your box is empty for now.</span></li>';
+  let note = '';
+  if (boxSize && t.items > 0 && t.items < boxSize) {
+    note = `There's room for ${boxSize - t.items} more in your ${sizeName(boxSize)} box. Fill it in step II, or order it as it is.`;
+  }
+  $('#review-note').textContent = note;
 }
 
 function orderLines() {
@@ -324,13 +412,53 @@ function addToBox(key, n) {
 }
 
 document.addEventListener('click', e => {
-  const btn = e.target.closest('.stepper button');
+  const sizeBtn = e.target.closest('[data-size]');
+  if (sizeBtn) {
+    boxSize = Number(sizeBtn.dataset.size);
+    activePreset = null;
+    render();
+    if (boxSize) {
+      toast(`A ${sizeName(boxSize)} box it is`);
+      goStep(2);
+    } else {
+      goStep(3);
+    }
+    return;
+  }
+  const stepBtn = e.target.closest('.wizard-steps [data-step]');
+  if (stepBtn) {
+    goStep(Number(stepBtn.dataset.step));
+    return;
+  }
+  if (e.target.closest('#step-next')) {
+    if (step === 1 && boxSize === null) {
+      toast('Choose a size to begin');
+      return;
+    }
+    goStep(step + 1);
+    return;
+  }
+  if (e.target.closest('#step-back')) {
+    goStep(step - 1);
+    return;
+  }
+  const btn = e.target.closest('.stepper button, .tile-art');
   if (btn) {
     const key = btn.dataset.key;
-    const step = KINDS[kindOf(key)].step;
+    const stepSize = KINDS[kindOf(key)].step;
     const dir = Number(btn.dataset.dir);
     if (dir > 0) {
-      addToBox(key, step);
+      const items = totals().items;
+      if (kindOf(key) !== 'loaf' && boxSize && items + stepSize > boxSize) {
+        if (btn.closest('#wizard')) {
+          toast(`Your ${sizeName(boxSize)} box is full. Choose a bigger size to add more.`);
+          $('#wizard').classList.add('nudge');
+          setTimeout(() => $('#wizard').classList.remove('nudge'), 600);
+          return;
+        }
+        boxSize = fitSize(items + stepSize);
+      }
+      addToBox(key, stepSize);
     } else {
       setQty(key, Math.max(0, qty[key] - step));
       activePreset = null;
@@ -340,6 +468,8 @@ document.addEventListener('click', e => {
   }
   const add = e.target.closest('[data-add]');
   if (add) {
+    const items = totals().items + 6;
+    if (boxSize === null || items > boxSize) boxSize = fitSize(items);
     addToBox(add.dataset.add, 6);
     return;
   }
@@ -347,11 +477,13 @@ document.addEventListener('click', e => {
   if (preset) {
     applyPreset(preset.dataset.preset);
     toast(`${PRESETS.find(p => p.id === preset.dataset.preset).name} is in your box`);
+    goStep(2, false);
     if (!preset.classList.contains('preset')) $('#order').scrollIntoView({ behavior: 'smooth' });
     return;
   }
   if (e.target.closest('[data-add-loaf]')) {
     addToBox('loaf', 1);
+    goStep(3, false);
     $('#order').scrollIntoView({ behavior: 'smooth' });
   }
 });
@@ -386,7 +518,7 @@ function setUpShowcase() {
   stage.append(...cards);
   stage.insertAdjacentHTML('beforeend', `
     <p class="flavors-count" aria-hidden="true"><span id="flavor-num">I</span> / IV</p>
-    <div class="flavors-dots">${cards.map((c, i) => `<button type="button" data-goto="${i}" aria-label="Show ${FLAVORS[i].name}"></button>`).join('')}</div>`);
+    <div class="flavors-dots">${cards.map((c, i) => `<button type="button" data-goto="${i}"><span>${NUMERALS[i]}</span>${FLAVORS[i].name}</button>`).join('')}</div>`);
   wrap.append(stage);
 
   const wide = window.matchMedia('(min-width: 900px) and (min-height: 600px)');
@@ -434,8 +566,40 @@ document.addEventListener('change', e => {
 
 // Event details
 const form = $('#order-form');
-const tomorrow = new Date(Date.now() + 864e5);
-form.date.min = tomorrow.toISOString().slice(0, 10);
+// Every order is baked fresh, so bake days open three days out.
+const LEAD_DAYS = 3;
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const firstDay = new Date();
+firstDay.setHours(0, 0, 0, 0);
+firstDay.setDate(firstDay.getDate() + LEAD_DAYS);
+form.date.min = ymd(firstDay);
+
+function buildDays() {
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(firstDay);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+  $('#day-strip').innerHTML = days.map(d => `
+    <button type="button" class="day" data-day="${ymd(d)}" aria-label="${d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}">
+      <span>${d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+      <strong>${d.getDate()}</strong>
+      <em>${d.toLocaleDateString('en-US', { month: 'short' })}</em>
+    </button>`).join('');
+}
+
+const markDay = () => document.querySelectorAll('.day').forEach(b => b.classList.toggle('is-active', b.dataset.day === form.date.value));
+
+$('#day-strip').addEventListener('click', e => {
+  const day = e.target.closest('.day');
+  if (!day) return;
+  form.date.value = day.dataset.day;
+  form.date.classList.remove('invalid');
+  $('#form-error').textContent = '';
+  markDay();
+});
+form.date.addEventListener('change', markDay);
+buildDays();
 
 form.addEventListener('input', e => {
   e.target.classList.remove('invalid');
@@ -454,6 +618,11 @@ form.addEventListener('submit', async e => {
 
   const required = ['name', 'email', 'phone', 'date'];
   if (t.delivery) required.push('address');
+  if (form.date.value && form.date.value < form.date.min) {
+    form.date.classList.add('invalid');
+    error.textContent = 'Please choose a bake day at least three days from today.';
+    return;
+  }
   const missing = required.filter(n => !form[n].value.trim() || !form[n].checkValidity());
   missing.forEach(n => form[n].classList.add('invalid'));
   if (missing.length) {
@@ -516,11 +685,33 @@ new IntersectionObserver(([entry]) => {
 }, { rootMargin: '-30% 0px -30% 0px' }).observe($('.builder'));
 
 setUpShowcase();
+buildSizes();
 buildPresets();
 buildZones();
 buildList();
 render();
+goStep(1, false);
 
 // A box chosen on the holidays page arrives as ?box=<id>.
 const chosen = new URLSearchParams(location.search).get('box');
-if (PRESETS.some(p => p.id === chosen)) applyPreset(chosen);
+if (PRESETS.some(p => p.id === chosen)) {
+  applyPreset(chosen);
+  goStep(4, false);
+}
+
+// On the hero, a silk brocade surfaces wherever the cursor moves, like light on fabric.
+(() => {
+  const hero = $('.hero');
+  if (!hero || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const brocade = document.createElement('div');
+  brocade.className = 'brocade';
+  brocade.setAttribute('aria-hidden', 'true');
+  hero.prepend(brocade);
+  hero.addEventListener('pointermove', e => {
+    const box = hero.getBoundingClientRect();
+    brocade.style.setProperty('--mx', `${e.clientX - box.left}px`);
+    brocade.style.setProperty('--my', `${e.clientY - box.top}px`);
+    brocade.classList.add('is-lit');
+  });
+  hero.addEventListener('pointerleave', () => brocade.classList.remove('is-lit'));
+})();

@@ -311,8 +311,8 @@
     <section class="section order" id="order">
       <header class="section-head">
         <p class="eyebrow">Build your box</p>
-        <h2>Fill it your way</h2>
-        <p>Start with a ready-made box or choose every flavor yourself, and watch your box fill as you go. Orders begin at two dozen cookies and muffins. The loaf is also available on its own.</p>
+        <h2>Four steps to your box</h2>
+        <p>Choose a size, fill it with your favorite flavors, add a loaf if you like, and watch your box come together as you go.</p>
       </header>
 
       <div class="builder">
@@ -328,7 +328,39 @@
           </div>
         </div>
 
-        <div class="builder-main">
+        <div class="builder-main wizard" id="wizard">
+          <ol class="wizard-steps">
+            <li><button type="button" data-step="1"><span>I</span>Size</button></li>
+            <li><button type="button" data-step="2"><span>II</span>Fill it</button></li>
+            <li><button type="button" data-step="3"><span>III</span>Banana bread</button></li>
+            <li><button type="button" data-step="4"><span>IV</span>Review</button></li>
+          </ol>
+
+          <section class="step" data-step="1" aria-labelledby="step-1-title">
+            <h3 class="step-title" id="step-1-title">How many are you feeding?</h3>
+            <p class="step-note">Plan on one to two pieces per guest. You'll choose cookies and muffins in the next step.</p>
+            <div class="sizes" id="sizes"></div>
+            <div class="presets" id="presets"></div>
+            <button type="button" class="text-btn" data-size="0">Just banana bread, please</button>
+          </section>
+
+          <section class="step" data-step="2" aria-labelledby="step-2-title" hidden>
+            <h3 class="step-title" id="step-2-title">Fill your box</h3>
+            <p class="step-note" id="fill-note">Tap a flavor to add six. Mix cookies and muffins any way you like.</p>
+            <div class="fill-meter" aria-hidden="true"><span id="fill-bar"></span></div>
+            <div class="builder-list" id="builder-list"></div>
+          </section>
+
+          <section class="step" data-step="3" aria-labelledby="step-3-title" hidden>
+            <h3 class="step-title" id="step-3-title">Add banana bread</h3>
+            <p class="step-note">Upside-down salted caramel banana bread, $35 a loaf. Entirely optional, and always welcome.</p>
+            <div class="loaf-pick" id="loaf-pick"></div>
+          </section>
+
+          <section class="step" data-step="4" aria-labelledby="step-4-title" hidden>
+            <h3 class="step-title" id="step-4-title">Review your box</h3>
+            <ul class="review" id="review"></ul>
+            <p class="step-note" id="review-note"></p>
           <div class="mode-wrap">
             <div class="mode" role="radiogroup" aria-label="Pickup or delivery">
               <label><input type="radio" name="fulfil" value="pickup" checked><span>Pickup</span></label>
@@ -337,11 +369,8 @@
             <div class="zones" id="zones" hidden></div>
             <p class="mode-note" id="mode-note">Pickup in Austin is always free.</p>
           </div>
-          <div class="presets" id="presets"></div>
-          <div class="builder-list" id="builder-list"></div>
-
         <aside class="summary" aria-live="polite">
-          <h3>Your order</h3>
+          <h4 class="summary-title">Your order</h4>
           <dl class="totals">
             <div><dt>Cookies</dt><dd id="sum-cookies">0</dd></div>
             <div><dt>Muffins</dt><dd id="sum-muffins">0</dd></div>
@@ -357,6 +386,13 @@
           <p class="status" id="sum-status"></p>
           <a class="btn btn-dark btn-block" href="#details" id="to-details">Continue to event details</a>
         </aside>
+        </div>
+          </section>
+
+          <div class="wizard-nav">
+            <button type="button" class="btn btn-line-dark" id="step-back">Back</button>
+            <button type="button" class="btn btn-dark" id="step-next">Next</button>
+          </div>
         </div>
       </div>
 
@@ -401,6 +437,11 @@
             <label>Email<input name="email" type="email" autocomplete="email" required></label>
             <label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>
             <label>Company or occasion<input name="occasion" placeholder="Baby shower for Priya"></label>
+            <div class="wide day-pick">
+              <p class="day-label">Choose your bake day</p>
+              <p class="day-note">Every order is baked fresh, so bake days open three days from today.</p>
+              <div class="day-strip" id="day-strip"></div>
+            </div>
             <label>Event date<input name="date" type="date" required></label>
             <label>Time you need it<input name="time" type="time"></label>
             <label class="wide" id="address-field" hidden>Delivery address<input name="address" autocomplete="street-address"></label>
