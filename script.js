@@ -3,6 +3,9 @@
 // pre-written email to ORDER_EMAIL.
 const FORM_ENDPOINT = '';
 const ORDER_EMAIL = 'suhanitiwari@utexas.edu';
+// The Stripe checkout worker (checkout-worker/worker.js). Paste its URL here
+// once it is deployed; until then orders arrive as emailed requests.
+const CHECKOUT_ENDPOINT = '';
 
 const MINIMUM = 24;
 const DELIVERY_MINIMUM = 100;
@@ -650,6 +653,27 @@ form.addEventListener('submit', async e => {
 
   const subject = `Order request for ${data.date}`;
   const mailto = `mailto:${ORDER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  if (CHECKOUT_ENDPOINT) {
+    const button = form.querySelector('button[type="submit"]');
+    const label = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Opening secure checkout';
+    try {
+      const res = await fetch(CHECKOUT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: qty, fulfil: t.delivery ? 'delivery' : 'pickup', zone: t.zone.id, details: data }),
+      });
+      const reply = await res.json();
+      if (!res.ok || !reply.url) throw new Error(reply.error || '');
+      window.location.href = reply.url;
+    } catch (err) {
+      error.innerHTML = `${err.message || "Checkout didn't open."} Please try again, or <a href="${mailto}">email your order</a> to ${ORDER_EMAIL}.`;
+      button.disabled = false;
+      button.textContent = label;
+    }
+    return;
+  }
   if (FORM_ENDPOINT) {
     const button = form.querySelector('button[type="submit"]');
     const label = button.textContent;
@@ -677,6 +701,11 @@ form.addEventListener('submit', async e => {
   $('#thanks').hidden = false;
   $('#thanks').scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
+
+// With checkout live, the form speaks about paying now instead of an invoice later.
+if (CHECKOUT_ENDPOINT) {
+  document.querySelectorAll('[data-checkout]').forEach(el => { el.textContent = el.dataset.checkout; });
+}
 
 // The phone summary bar shows only while the builder is on screen.
 new IntersectionObserver(([entry]) => {

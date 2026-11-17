@@ -1214,3 +1214,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
 .fold-seal { position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px; border-radius: 50%; background: var(--ristretto); border: 1px solid var(--gold); outline: 0.5px solid var(--gold); outline-offset: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Pinyon Script', cursive; font-size: 34px; color: var(--gold-light); opacity: 0; transform: scale(.7) rotate(-20deg); transition: opacity .3s ease, transform .45s cubic-bezier(.3, 1.4, .5, 1); }
 .fold.is-shut .fold-top, .fold.is-shut .fold-bottom { transform: none; }
 .fold.is-shut .fold-seal { opacity: 1; transform: none; transition-delay: .35s; }
+
+/* Thank-you page after checkout */
+.thanks-hero { background: radial-gradient(120% 90% at 50% 0%, #3A241C 0%, var(--ristretto) 70%); color: var(--ivory); padding: 72px 16px 96px; min-height: 70vh; display: flex; align-items: center; }
+.thanks-hero .hero-frame { max-width: 760px; margin: 0 auto; text-align: center; padding: 52px 28px 56px; border: 1px solid var(--gold); outline: 0.5px solid var(--gold); outline-offset: 5px; }
+.thanks-hero h1 { font-size: clamp(40px, 7vw, 68px); color: var(--ivory); }
+.thanks-hero h1 em { display: block; font-style: italic; font-weight: 400; color: var(--rose); }
+.thanks-hero .lede a { color: var(--rose); }

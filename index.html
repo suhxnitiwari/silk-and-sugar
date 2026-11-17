@@ -424,7 +424,7 @@
         <header class="section-head">
           <p class="eyebrow">Event details</p>
           <h2>Tell me about your event</h2>
-          <p>You'll hear back to confirm your date, then receive a Stripe invoice to pay for your order.</p>
+          <p data-checkout="Pay in full through Stripe's secure checkout to reserve your bake day. Your receipt arrives by email right away.">You'll hear back to confirm your date, then receive a Stripe invoice to pay for your order.</p>
         </header>
 
         <form id="order-form" novalidate>
@@ -451,7 +451,7 @@
           <label class="check"><input type="checkbox" name="labels" required> I've read the <a href="#labels">ingredients and allergens</a>.</label>
 
           <p class="form-error" id="form-error" role="alert"></p>
-          <button class="btn btn-rose" type="submit">Send my request</button>
+          <button class="btn btn-rose" type="submit" data-checkout="Pay securely with Stripe">Send my request</button>
         </form>
 
         <div class="thanks" id="thanks" hidden>
