@@ -262,6 +262,11 @@ function render() {
 
   renderFormOrder(t, issue);
   renderStage(t);
+  const count = $('#nav-count');
+  count.textContent = t.items + t.loaves;
+  count.classList.remove('bump');
+  void count.offsetWidth;
+  count.classList.add('bump');
 }
 
 function orderLines() {
@@ -288,29 +293,140 @@ function renderFormOrder(t, issue) {
   box.innerHTML = `<ul>${lines.join('')}</ul>`;
 }
 
+// A small note that slides up whenever something lands in the box.
+function toast(message) {
+  let shelf = $('#toasts');
+  if (!shelf) {
+    shelf = document.createElement('div');
+    shelf.id = 'toasts';
+    shelf.className = 'toasts';
+    shelf.setAttribute('aria-live', 'polite');
+    document.body.append(shelf);
+  }
+  const note = document.createElement('p');
+  note.className = 'toast';
+  note.textContent = message;
+  shelf.append(note);
+  while (shelf.children.length > 3) shelf.firstElementChild.remove();
+  setTimeout(() => note.classList.add('is-leaving'), 2600);
+  setTimeout(() => note.remove(), 3100);
+}
+
+const flavorName = key => (key === 'loaf' ? 'banana bread' : FLAVORS.find(f => key.startsWith(f.id)).name);
+const plural = (n, kind) => (kind === 'loaf' ? (n === 1 ? 'loaf' : 'loaves') : `${kind}${n === 1 ? '' : 's'}`);
+
+function addToBox(key, n) {
+  setQty(key, qty[key] + n);
+  activePreset = null;
+  render();
+  const kind = kindOf(key);
+  toast(kind === 'loaf' ? 'A loaf of banana bread is in your box' : `Six ${flavorName(key)} ${plural(n, kind)} added`);
+}
+
 document.addEventListener('click', e => {
   const btn = e.target.closest('.stepper button');
   if (btn) {
     const key = btn.dataset.key;
     const step = KINDS[kindOf(key)].step;
-    setQty(key, Math.max(0, qty[key] + step * Number(btn.dataset.dir)));
-    activePreset = null;
-    render();
+    const dir = Number(btn.dataset.dir);
+    if (dir > 0) {
+      addToBox(key, step);
+    } else {
+      setQty(key, Math.max(0, qty[key] - step));
+      activePreset = null;
+      render();
+    }
+    return;
+  }
+  const add = e.target.closest('[data-add]');
+  if (add) {
+    addToBox(add.dataset.add, 6);
     return;
   }
   const preset = e.target.closest('[data-preset]');
   if (preset) {
     applyPreset(preset.dataset.preset);
+    toast(`${PRESETS.find(p => p.id === preset.dataset.preset).name} is in your box`);
     if (!preset.classList.contains('preset')) $('#order').scrollIntoView({ behavior: 'smooth' });
     return;
   }
   if (e.target.closest('[data-add-loaf]')) {
-    setQty('loaf', qty.loaf + 1);
-    activePreset = null;
-    render();
+    addToBox('loaf', 1);
     $('#order').scrollIntoView({ behavior: 'smooth' });
   }
 });
+
+// The menu: on wide screens each flavor gets the whole screen as you scroll.
+const FLAVOR_TINTS = ['#E8D6C0', '#EBD5BB', '#E3D2BE', '#EDD6C6'];
+const NUMERALS = ['I', 'II', 'III', 'IV'];
+
+function setUpShowcase() {
+  const wrap = $('.flavors');
+  if (!wrap) return;
+  const cards = [...wrap.querySelectorAll('.flavor')];
+
+  cards.forEach((card, i) => {
+    const copy = document.createElement('div');
+    copy.className = 'flavor-copy';
+    [...card.children].filter(el => !el.matches('figure, h3')).forEach(el => copy.append(el));
+    const id = FLAVORS[i].id;
+    copy.insertAdjacentHTML('beforeend', `
+      <div class="flavor-add">
+        <button type="button" class="add-btn" data-add="${id}-cookie">Add six cookies</button>
+        <button type="button" class="add-btn add-btn-line" data-add="${id}-muffin">Add six muffins</button>
+      </div>`);
+    card.append(copy);
+    const fabric = card.querySelector('.photo-script .fabric');
+    if (fabric) card.insertAdjacentHTML('afterbegin', `<span class="flavor-word" aria-hidden="true">${fabric.textContent.trim()}</span>`);
+    card.querySelector('.flavor-photo')?.insertAdjacentHTML('afterend', '<span class="flavor-shadow" aria-hidden="true"></span>');
+  });
+
+  const stage = document.createElement('div');
+  stage.className = 'flavors-stage';
+  stage.append(...cards);
+  stage.insertAdjacentHTML('beforeend', `
+    <p class="flavors-count" aria-hidden="true"><span id="flavor-num">I</span> / IV</p>
+    <div class="flavors-dots">${cards.map((c, i) => `<button type="button" data-goto="${i}" aria-label="Show ${FLAVORS[i].name}"></button>`).join('')}</div>`);
+  wrap.append(stage);
+
+  const wide = window.matchMedia('(min-width: 900px) and (min-height: 600px)');
+  let current = -1;
+
+  const show = i => {
+    if (i === current) return;
+    current = i;
+    cards.forEach((card, j) => card.classList.toggle('is-active', j === i));
+    stage.querySelectorAll('[data-goto]').forEach((dot, j) => dot.classList.toggle('is-active', j === i));
+    stage.style.setProperty('--tint', FLAVOR_TINTS[i]);
+    $('#flavor-num').textContent = NUMERALS[i];
+  };
+
+  const onScroll = () => {
+    if (!wrap.classList.contains('is-pinned')) return;
+    const rect = wrap.getBoundingClientRect();
+    const travel = rect.height - window.innerHeight;
+    const progress = Math.min(Math.max(-rect.top / travel, 0), 0.999);
+    show(Math.floor(progress * cards.length));
+  };
+
+  const mode = () => {
+    wrap.classList.toggle('is-pinned', wide.matches);
+    current = -1;
+    if (wide.matches) onScroll();
+  };
+
+  stage.addEventListener('click', e => {
+    const dot = e.target.closest('[data-goto]');
+    if (!dot) return;
+    const travel = wrap.offsetHeight - window.innerHeight;
+    const top = wrap.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + travel * ((Number(dot.dataset.goto) + 0.5) / cards.length), behavior: 'smooth' });
+  });
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  wide.addEventListener('change', mode);
+  mode();
+}
 
 document.addEventListener('change', e => {
   if (e.target.matches('input[name="fulfil"], input[name="zone"]')) render();
@@ -363,21 +479,29 @@ form.addEventListener('submit', async e => {
     `Notes: ${data.notes || ''}`, '', summary,
   ].join('\n');
 
+  const subject = `Order request for ${data.date}`;
+  const mailto = `mailto:${ORDER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   if (FORM_ENDPOINT) {
+    const button = form.querySelector('button[type="submit"]');
+    const label = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Sending';
     try {
       const res = await fetch(FORM_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ ...data, order: summary, _subject: `Order request for ${data.date}` }),
+        body: JSON.stringify({ ...data, order: summary, _subject: subject }),
       });
       if (!res.ok) throw new Error();
     } catch {
-      error.textContent = "Your request didn't go through. Please try again in a moment.";
+      // If the form service is down, the order can still reach me by email.
+      error.innerHTML = `Your request didn't go through. Please try again, or <a href="${mailto}">email your order</a> to ${ORDER_EMAIL}.`;
+      button.disabled = false;
+      button.textContent = label;
       return;
     }
   } else {
-    const subject = encodeURIComponent(`Order request for ${data.date}`);
-    window.location.href = `mailto:${ORDER_EMAIL}?subject=${subject}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
   }
 
   form.hidden = true;
@@ -391,6 +515,7 @@ new IntersectionObserver(([entry]) => {
   document.body.classList.toggle('bar-on', entry.isIntersecting);
 }, { rootMargin: '-30% 0px -30% 0px' }).observe($('.builder'));
 
+setUpShowcase();
 buildPresets();
 buildZones();
 buildList();
