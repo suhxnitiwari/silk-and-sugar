@@ -148,7 +148,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
 /* Promise bar */
 .promises {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   max-width: var(--wrap);
   margin: 0 auto;
   padding: 36px 16px;
@@ -1116,6 +1116,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
   .promise { padding: 4px 10px; }
   .promise + .promise { border-left: 0; }
   .promise:nth-child(2n) { border-left: 0.5px solid rgba(168, 135, 90, .5); }
+  .promise:last-child { grid-column: 1 / -1; }
   .promise h2 { font-size: 19px; }
   .promise p { font-size: 13px; }
   .section, .loaf, .details { padding-top: 64px; padding-bottom: 64px; }
