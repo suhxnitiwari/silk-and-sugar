@@ -1079,6 +1079,12 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; marg
 }
 .brocade.is-lit { opacity: 1; }
 
+/* Never in the bowl */
+.never { margin: 26px 0 0; }
+.never-label { margin: 0 0 10px; font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--gold); }
+.never-list { margin: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink); }
+.never-list span { text-decoration: line-through; text-decoration-color: var(--gold); text-decoration-thickness: 1px; }
+
 /* Tablet */
 @media (max-width: 980px) {
   .pantry-inner, .chapter-inner, .chapter-dark .chapter-inner { grid-template-columns: 1fr; gap: 40px; }
